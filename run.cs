@@ -2,7 +2,7 @@ using System;
 
 namespace Webserver
 {
-    class Program
+    class Run
     {
         static void Main (string[] args)
         {
