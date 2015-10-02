@@ -5,7 +5,7 @@ using System.Text;
 using Mono.Data.Sqlite; // Mac or Linux
 //using System.Data.SQlite // Windows
 
-namespace ExampleSimpleWebserver
+namespace SimpleWebserver
 {
     class Program
     {
