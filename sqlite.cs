@@ -1,36 +1,23 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Text;
 using Mono.Data.Sqlite; // Mac or Linux
 //using System.Data.SQlite // Windows
-
-namespace SimpleWebserver
+//
+namespace Webserver
 {
-    class Program
-    {
-        static void Main (string[] args)
-        {
-            List<string> tList = new List<string>();
-
-            Console.WriteLine("Running sync server.");
-            new SyncServer();
-        }
-    }
-
-    class SqliteHandling
+    public class SqliteHandling
     {
         string filename;
 
         public SqliteHandling(string filename)
         {
             this.filename = filename;
-            CreateTableOnlyOnce();
         }
 
         public void CreateTableOnlyOnce()
         {
-            using (var conn = new SqliteConnection("Data Source=dataset.db"))
+            List<string> tList = new List<string>();
+            using (var conn = new SqliteConnection("Data Source=" + filename))
             {
                 conn.Open();
                 using (SqliteTransaction transaction = conn.BeginTransaction())
@@ -68,34 +55,4 @@ namespace SimpleWebserver
         }
     }
 
-    public class SyncServer
-    {
-        public SyncServer()
-        {
-            var listener = new HttpListener();
-
-            listener.Prefixes.Add("http://localhost:8081/");
-            listener.Prefixes.Add("http://127.0.0.1:8081/");
-
-            listener.Start();
-
-            while (true)
-            {
-                try
-                {
-                    var context = listener.GetContext(); //Block until a connection comes in
-                    context.Response.StatusCode = 200;
-                    context.Response.SendChunked = true;
-
-                    var bytes = Encoding.UTF8.GetBytes("waiting");
-                    context.Response.OutputStream.Write(bytes, 0, bytes.Length);
-                    context.Response.Close();
-                }
-                catch (Exception)
-                {
-                    // Client disconnected or some other error - ignored for this example
-                }
-            }
-        }
-    }
 }
