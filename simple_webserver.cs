@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using Mono.Data.Sqlite; // Mac or Linux
+//using System.Data.SQlite // Windows
 
 namespace ExampleSimpleWebserver
 {
@@ -9,6 +11,37 @@ namespace ExampleSimpleWebserver
    {
       static void Main (string[] args)
       {
+        List<string> tList = new List<string>();
+        using (var conn = new SqliteConnection("Data Source=dataset.db"))
+        {
+            conn.Open();
+            using (SqliteCommand command = conn.CreateCommand())
+            {
+                command.CommandText = "SELECT * FROM sqlite_master WHERE type='table'";
+                using (SqliteDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        tList.Add(reader["tbl_name"].ToString());
+                    }
+                }
+
+                if (tList.Count == 0)
+                {
+                    Console.WriteLine("Table created.");
+                    command.CommandText = "CREATE TABLE matching(id INTEGER PRYMARY KEY, ip_address_1, ip_address_2)";
+                    command.ExecuteNonQuery();
+                } else {
+                    Console.WriteLine("Table exist.");
+                    foreach (string tableName in tList)
+                    {
+                        Console.WriteLine(tableName);
+                    }
+                }
+            }
+            conn.Close();
+        }
+
         Console.WriteLine("Running sync server.");
         new SyncServer();
       }
