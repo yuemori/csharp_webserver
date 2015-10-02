@@ -7,74 +7,74 @@ using Mono.Data.Sqlite; // Mac or Linux
 
 namespace ExampleSimpleWebserver
 {
-   class Program
-   {
-      static void Main (string[] args)
-      {
-        List<string> tList = new List<string>();
-        using (var conn = new SqliteConnection("Data Source=dataset.db"))
+    class Program
+    {
+        static void Main (string[] args)
         {
-            conn.Open();
-            using (SqliteCommand command = conn.CreateCommand())
+            List<string> tList = new List<string>();
+            using (var conn = new SqliteConnection("Data Source=dataset.db"))
             {
-                command.CommandText = "SELECT * FROM sqlite_master WHERE type='table'";
-                using (SqliteDataReader reader = command.ExecuteReader())
+                conn.Open();
+                using (SqliteCommand command = conn.CreateCommand())
                 {
-                    while (reader.Read())
+                    command.CommandText = "SELECT * FROM sqlite_master WHERE type='table'";
+                    using (SqliteDataReader reader = command.ExecuteReader())
                     {
-                        tList.Add(reader["tbl_name"].ToString());
+                        while (reader.Read())
+                        {
+                            tList.Add(reader["tbl_name"].ToString());
+                        }
                     }
-                }
 
-                if (tList.Count == 0)
-                {
-                    Console.WriteLine("Table created.");
-                    command.CommandText = "CREATE TABLE matching(id INTEGER PRYMARY KEY, ip_address_1, ip_address_2)";
-                    command.ExecuteNonQuery();
-                } else {
-                    Console.WriteLine("Table exist.");
-                    foreach (string tableName in tList)
+                    if (tList.Count == 0)
                     {
-                        Console.WriteLine(tableName);
+                        Console.WriteLine("Table created.");
+                        command.CommandText = "CREATE TABLE matching(id INTEGER PRYMARY KEY, ip_address_1, ip_address_2)";
+                        command.ExecuteNonQuery();
+                    } else {
+                        Console.WriteLine("Table exist.");
+                        foreach (string tableName in tList)
+                        {
+                            Console.WriteLine(tableName);
+                        }
                     }
                 }
+                conn.Close();
             }
-            conn.Close();
+
+            Console.WriteLine("Running sync server.");
+            new SyncServer();
         }
+    }
 
-        Console.WriteLine("Running sync server.");
-        new SyncServer();
-      }
-   }
+    public class SyncServer
+    {
+        public SyncServer()
+        {
+            var listener = new HttpListener();
 
-   public class SyncServer
-   {
-      public SyncServer()
-      {
-         var listener = new HttpListener();
+            listener.Prefixes.Add("http://localhost:8081/");
+            listener.Prefixes.Add("http://127.0.0.1:8081/");
 
-         listener.Prefixes.Add("http://localhost:8081/");
-         listener.Prefixes.Add("http://127.0.0.1:8081/");
+            listener.Start();
 
-         listener.Start();
-
-         while (true)
-         {
-            try
+            while (true)
             {
-               var context = listener.GetContext(); //Block until a connection comes in
-               context.Response.StatusCode = 200;
-               context.Response.SendChunked = true;
+                try
+                {
+                    var context = listener.GetContext(); //Block until a connection comes in
+                    context.Response.StatusCode = 200;
+                    context.Response.SendChunked = true;
 
-               var bytes = Encoding.UTF8.GetBytes("waiting");
-               context.Response.OutputStream.Write(bytes, 0, bytes.Length);
-               context.Response.Close();
+                    var bytes = Encoding.UTF8.GetBytes("waiting");
+                    context.Response.OutputStream.Write(bytes, 0, bytes.Length);
+                    context.Response.Close();
+                }
+                catch (Exception)
+                {
+                    // Client disconnected or some other error - ignored for this example
+                }
             }
-            catch (Exception)
-            {
-               // Client disconnected or some other error - ignored for this example
-            }
-         }
-      }
-   }
+        }
+    }
 }
