@@ -20,7 +20,7 @@ namespace MatchingServer
         public Matching(string hostAddress)
         {
             this.hostAddress = hostAddress;
-            MatchingStart();
+            MatchStart();
         }
 
         public string GetResponseValue()
@@ -35,14 +35,6 @@ namespace MatchingServer
             return "";
         }
 
-        string GetMatchingSearchSql()
-        {
-            return string.Format(
-                "SELECT * FROM matching WHERE host = '{0}' OR guest = '{0}'",
-                hostAddress
-            );
-        }
-
         MatchingTable CreateMatchingTable(SqliteDataReader reader)
         {
             return new MatchingTable(
@@ -52,101 +44,101 @@ namespace MatchingServer
             );
         }
 
-        STATUS MatchingStart()
+        List<MatchingTable> GetMatchingList(SqliteCommand command, string sql)
+        {
+            command.CommandText = sql;
+            List<MatchingTable> matchingList = new List<MatchingTable>();
+            using (SqliteDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    matchingList.Add(CreateMatchingTable(reader));
+                }
+            }
+            return matchingList;
+        }
+
+        STATUS RegisterHost(SqliteCommand command)
+        {
+            List<MatchingTable> matchingList = GetMatchingList(command, "SELECT * FROM matching WHERE guest = null");
+            switch (matchingList.Count)
+            {
+                case 0:
+                    RegisterAddressToHost(command, hostAddress);
+                    return STATUS.WAITING;
+                case 1:
+                    RegisterAddressToGuest(command, matchingList[0].id, hostAddress);
+                    enemyAddress = matchingList[0].host;
+                    return STATUS.MATCHING;
+                default:
+                    Console.WriteLine("Waiting over 2 number");
+                    throw new Exception();
+            }
+        }
+
+        void RegisterAddressToHost(SqliteCommand command, string address)
+        {
+            Console.WriteLine("Register to host");
+            command.CommandText = string.Format(
+                "INSERT INTO matching (host, guest) VALUES('{0}', null)",
+                address
+            );
+            command.ExecuteNonQuery();
+        }
+
+        void RegisterAddressToGuest(SqliteCommand command, string id, string address)
+        {
+            Console.WriteLine("Register to guest");
+            command.CommandText = string.Format(
+                "UPDATE matching SET guest = '{0}' WHERE id = {1}",
+                address,
+                id
+            );
+            command.ExecuteNonQuery();
+        }
+
+        STATUS MatchingCheck(MatchingTable matching)
+        {
+            if (matching.IsWaiting())
+            {
+                Console.WriteLine("Status is waiting");
+                return STATUS.WAITING;
+            }
+
+            Console.WriteLine("Status is matching");
+            enemyAddress = matching.GetEnemyAddress(hostAddress);
+            return STATUS.MATCHING;
+        }
+
+        STATUS Match(SqliteCommand command)
+        {
+            List<MatchingTable> matchList = GetMatchingList(
+                command,
+                string.Format( "SELECT * FROM matching WHERE host = '{0}' OR guest = '{0}'", hostAddress)
+            );
+            switch (matchList.Count)
+            {
+                case 0:
+                    Console.WriteLine("HostAddress not registerd");
+                    return RegisterHost(command);
+                case 1:
+                    Console.WriteLine("HostAddress registerd");
+                    return MatchingCheck(matchList[0]);
+                default:
+                    Console.WriteLine("Matching over 2 number");
+                    throw new Exception();
+            }
+        }
+
+        void MatchStart()
         {
             Console.WriteLine("Matching Start");
             SqliteHandler sqlite = SqliteHandler.GetInstance();
             sqlite.ExecuteQuery((command) => {
                 Console.WriteLine("Matching search start: " + hostAddress);
-                command.CommandText = GetMatchingSearchSql();
-                List<MatchingTable> matchList = new List<MatchingTable>();
-                // ホストかゲストで登録されてないか検索
-                using (SqliteDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        matchList.Add(CreateMatchingTable(reader));
-                    }
-                }
-                switch (matchList.Count)
-                {
-                    // 0件なら登録されていないので登録する
-                    case 0:
-                        // マッチング待ちがいないか確認する
-                        Console.WriteLine("Waiting search start");
-                        command.CommandText = "SELECT * FROM matching WHERE guest = null";
-                        List<MatchingTable> waitingList = new List<MatchingTable>();
-                        using (SqliteDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                waitingList.Add(CreateMatchingTable(reader));
-                            }
-                        }
-                        switch (waitingList.Count)
-                        {
-                            // 0件ならマッチング待ちがいないのでhostとして登録する
-                            case 0:
-                                Console.WriteLine("Waiting not exist");
-                                command.CommandText = string.Format(
-                                    "INSERT INTO matching (host, guest) VALUES('{0}', null)",
-                                    hostAddress
-                                );
-                                command.ExecuteNonQuery();
-                                result = STATUS.WAITING;
-                                break;
-                            // 1件ならマッチング待ちがいるので登録し、ホストアドレスを登録する
-                            case 1:
-                                Console.WriteLine("Waiting exist");
-                                command.CommandText = string.Format(
-                                    "UPDATE matching SET guest = '{0}' WHERE id = {1}",
-                                    hostAddress,
-                                    waitingList[0].id.ToString()
-                                );
-                                command.ExecuteNonQuery();
-                                enemyAddress = waitingList[0].host;
-                                result = STATUS.MATCHING;
-                                break;
-                            // 2件以上の場合はエラー
-                            default:
-                                Console.WriteLine("Waiting over 2 number");
-                                throw new Exception();
-                        }
-                        break;
-                    // 1件なら登録済みなのでマッチング相手がいるか確認する
-                    case 1:
-                        Console.WriteLine("HostAddress registerd");
-                        // host or guestが空文字ならマッチング相手がいないのでWAITINGを返す
-                        if (matchList[0].IsWaiting())
-                        {
-                            Console.WriteLine("Status is waiting");
-                            result = STATUS.WAITING;
-                        // どちらもnullでなければマッチング済み
-                        } else
-                        {
-                            Console.WriteLine("Status is matching");
-                            if (matchList[0].host == hostAddress)
-                            {
-                                Console.WriteLine("Host");
-                                Console.WriteLine(matchList[0].guest);
-                                enemyAddress = matchList[0].guest;
-                            } else
-                            {
-                                Console.WriteLine("Guest");
-                                Console.WriteLine(matchList[0].host);
-                                enemyAddress = matchList[0].host;
-                            }
-                            result = STATUS.MATCHING;
-                        }
-                        break;
-                    // 2件以上の場合はエラー
-                    default:
-                        Console.WriteLine("Matching over 2 number");
-                        throw new Exception();
-                }
+                result = Match(command);
             });
             Console.WriteLine("Matching End\n");
-            return result;
         }
     }
 }

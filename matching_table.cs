@@ -1,3 +1,5 @@
+using System;
+
 namespace MatchingServer
 {
     public class MatchingTable
@@ -26,6 +28,16 @@ namespace MatchingServer
         public bool IsGuest(string address)
         {
             return guest == address;
+        }
+
+
+        public string GetEnemyAddress(string address)
+        {
+            if (IsHost(address))
+                return guest;
+            if (IsGuest(address))
+                return host;
+            throw new Exception();
         }
     }
 }
