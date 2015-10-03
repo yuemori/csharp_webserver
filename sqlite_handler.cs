@@ -8,15 +8,16 @@ namespace MatchingServer
     public class SqliteHandler
     {
         private static SqliteHandler instance;
-        private static readonly string filename = "dataset.db";
+        private string filename;
         private readonly string tableDefinition = @"
             CREATE TABLE matching(id INTEGER PRYMARY KEY, host TEXT, guest TEXT)
         ";
 
         public delegate void CallbackQuery(SqliteCommand command);
 
-        public SqliteHandler()
+        private SqliteHandler()
         {
+            this.filename = Application.Config.DatabaseFile;
             CreateTableOnlyOnce();
         }
 
