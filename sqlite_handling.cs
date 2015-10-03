@@ -31,9 +31,8 @@ namespace MatchingServer
 
         void CreateTableOnlyOnce()
         {
+            Console.WriteLine("Create table");
             ExecuteQuery((command) => {
-                command.CommandText = "SELECT * FROM sqlite_master WHERE type='table'";
-
                 // テーブルがあるかチェックしてなければ作成
                 if (!IsTableExist(command))
                 {
@@ -63,6 +62,7 @@ namespace MatchingServer
 
         private bool IsTableExist(SqliteCommand command)
         {
+            command.CommandText = "SELECT * FROM sqlite_master WHERE type='table'";
             List<string> tList = new List<string>();
             using (SqliteDataReader reader = command.ExecuteReader())
             {
