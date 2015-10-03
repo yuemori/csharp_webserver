@@ -31,11 +31,11 @@ namespace MatchingServer
 
         void CreateTableOnlyOnce()
         {
-            Console.WriteLine("Create table");
             ExecuteQuery((command) => {
                 // テーブルがあるかチェックしてなければ作成
                 if (!IsTableExist(command))
                 {
+                    Console.WriteLine("Create table");
                     Console.WriteLine("Table created.");
                     command.CommandText = tableDefinition;
                     command.ExecuteNonQuery();

@@ -6,7 +6,20 @@ namespace MatchingServer
 {
     public class Server
     {
+        private bool debug = false;
+
         public Server()
+        {
+            StartServer();
+        }
+
+        public Server(bool debug)
+        {
+            this.debug = debug;
+            StartServer();
+        }
+
+        void StartServer()
         {
             HttpListener listener = GetHttpListener();
             try
@@ -47,7 +60,14 @@ namespace MatchingServer
 
         void AddResponseOutput(HttpListenerContext context)
         {
-            Matching matching = new Matching(context.Request.UserHostAddress);
+            Matching matching;
+            if (debug)
+            {
+                var param = context.Request.QueryString["name"];
+                matching = new Matching((param == "") ? "debug" : param);
+            } else {
+                matching = new Matching(context.Request.UserHostAddress);
+            }
             string result = matching.GetResponseValue();
             byte[] bytes = Encoding.UTF8.GetBytes(result);
 

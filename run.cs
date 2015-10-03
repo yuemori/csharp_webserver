@@ -6,8 +6,18 @@ namespace MatchingServer
     {
         static void Main (string[] args)
         {
-            Console.WriteLine("Running sync server.");
-            new Server();
+            bool debug;
+            if (args.Length >= 1 && args[0] == "debug")
+            {
+                Console.WriteLine("Running server(debug mode).");
+                debug = true;
+            }
+            else
+            {
+                Console.WriteLine("Running server.");
+                debug = false;
+            }
+            new Server(debug);
         }
     }
 }
