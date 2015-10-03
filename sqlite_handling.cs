@@ -5,9 +5,9 @@ using Mono.Data.Sqlite; // Mac or Linux
 //
 namespace MatchingServer
 {
-    public class SqliteHandling
+    public class SqliteHandler
     {
-        private static SqliteHandling instance;
+        private static SqliteHandler instance;
         private static readonly string filename = "dataset.db";
         private readonly string tableDefinition = @"
             CREATE TABLE matching(id INTEGER PRYMARY KEY, ip_address_1, ip_address_2)
@@ -15,16 +15,16 @@ namespace MatchingServer
 
         public delegate void CallbackQuery(SqliteCommand command);
 
-        public SqliteHandling()
+        public SqliteHandler()
         {
             CreateTableOnlyOnce();
         }
 
-        public static SqliteHandling GetInstance()
+        public static SqliteHandler GetInstance()
         {
             if (instance == null)
             {
-                instance = new SqliteHandling();
+                instance = new SqliteHandler();
             }
             return instance;
         }
