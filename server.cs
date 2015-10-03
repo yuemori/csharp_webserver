@@ -47,7 +47,10 @@ namespace MatchingServer
 
         void AddResponseOutput(HttpListenerContext context)
         {
-            var bytes = Encoding.UTF8.GetBytes("waiting");
+            Matching matching = new Matching(context.Request.UserHostAddress);
+            string result = matching.GetResponseValue();
+            byte[] bytes = Encoding.UTF8.GetBytes(result);
+
             context.Response.OutputStream.Write(bytes, 0, bytes.Length);
         }
 
