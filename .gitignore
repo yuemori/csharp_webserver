@@ -1,2 +1,3 @@
 *.exe
-dataset.db
+*.db
+*.log

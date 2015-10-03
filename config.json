@@ -1,0 +1,5 @@
+{
+  "database_file": "dataset.db",
+  "log_file": "development.log",
+  "encoding": "UTF-8"
+}
