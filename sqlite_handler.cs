@@ -35,10 +35,9 @@ namespace MatchingServer
                 // テーブルがあるかチェックしてなければ作成
                 if (!IsTableExist(command))
                 {
-                    Console.WriteLine("Create table");
-                    Console.WriteLine("Table created.");
                     command.CommandText = tableDefinition;
                     command.ExecuteNonQuery();
+                    Logger.Info("Table created");
                 }
             });
         }

@@ -9,12 +9,12 @@ namespace MatchingServer
             bool debug;
             if (args.Length >= 1 && args[0] == "debug")
             {
-                Console.WriteLine("Running server(debug mode).");
+                Logger.Info("Running server(debug mode).");
                 debug = true;
             }
             else
             {
-                Console.WriteLine("Running server.");
+                Logger.Info("Running server.");
                 debug = false;
             }
             new Server(debug);

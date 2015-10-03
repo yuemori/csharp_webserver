@@ -14,7 +14,8 @@ namespace MatchingServer
         public enum STATUS
         {
             WAITING,
-            MATCHING
+            MATCHING,
+            ERROR
         }
 
         public Matching(string hostAddress)
@@ -31,8 +32,12 @@ namespace MatchingServer
                     return "waiting";
                 case Matching.STATUS.MATCHING:
                     return enemyAddress;
+                case Matching.STATUS.ERROR:
+                    return "error";
+                default:
+                    Logger.Debug("Found illegal STATUS");
+                    throw new Exception();
             }
-            return "";
         }
 
         MatchingTable CreateMatchingTable(SqliteDataReader reader)
@@ -71,14 +76,14 @@ namespace MatchingServer
                     enemyAddress = matchingList[0].host;
                     return STATUS.MATCHING;
                 default:
-                    Console.WriteLine("Waiting over 2 number");
-                    throw new Exception();
+                    Logger.Error("MatchingList found over 2 number");
+                    return STATUS.ERROR;
             }
         }
 
         void RegisterAddressToHost(SqliteCommand command, string address)
         {
-            Console.WriteLine("Register to host");
+            Logger.Info("Register to host");
             command.CommandText = string.Format(
                 "INSERT INTO matching (host, guest) VALUES('{0}', null)",
                 address
@@ -88,7 +93,7 @@ namespace MatchingServer
 
         void RegisterAddressToGuest(SqliteCommand command, string id, string address)
         {
-            Console.WriteLine("Register to guest");
+            Logger.Info("Register to guest");
             command.CommandText = string.Format(
                 "UPDATE matching SET guest = '{0}' WHERE id = {1}",
                 address,
@@ -101,11 +106,11 @@ namespace MatchingServer
         {
             if (matching.IsWaiting())
             {
-                Console.WriteLine("Status is waiting");
+                Logger.Info("Status is waiting");
                 return STATUS.WAITING;
             }
 
-            Console.WriteLine("Status is matching");
+            Logger.Info("Status is matching");
             enemyAddress = matching.GetEnemyAddress(hostAddress);
             return STATUS.MATCHING;
         }
@@ -119,26 +124,28 @@ namespace MatchingServer
             switch (matchList.Count)
             {
                 case 0:
-                    Console.WriteLine("HostAddress not registerd");
+                    Logger.Info("HostAddress not registerd");
                     return RegisterHost(command);
                 case 1:
-                    Console.WriteLine("HostAddress registerd");
+                    Logger.Info("HostAddress registerd");
                     return MatchingCheck(matchList[0]);
                 default:
-                    Console.WriteLine("Matching over 2 number");
-                    throw new Exception();
+                    Logger.Warning("Matching over 2 number");
+                    return STATUS.ERROR;
             }
         }
 
         void MatchStart()
         {
-            Console.WriteLine("Matching Start");
             SqliteHandler sqlite = SqliteHandler.GetInstance();
+            Logger.Info("-------------------");
+            Logger.Info("Request recieved");
             sqlite.ExecuteQuery((command) => {
-                Console.WriteLine("Matching search start: " + hostAddress);
+                Logger.Info("Matching Start: " + hostAddress);
                 result = Match(command);
             });
-            Console.WriteLine("Matching End\n");
+            Logger.Info("Matching End");
+            Logger.Info("-------------------");
         }
     }
 }

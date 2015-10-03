@@ -76,8 +76,8 @@ namespace MatchingServer
 
         void ErrorHandling(Exception e)
         {
-            Console.WriteLine("Raise Exception.");
-            Console.WriteLine(e.ToString());
+            Logger.Error("Raise Exception.");
+            Logger.Error(e.ToString());
         }
     }
 }

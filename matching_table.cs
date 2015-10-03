@@ -37,6 +37,7 @@ namespace MatchingServer
                 return guest;
             if (IsGuest(address))
                 return host;
+            Logger.Error("Address is illegal");
             throw new Exception();
         }
     }
