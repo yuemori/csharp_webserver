@@ -10,22 +10,21 @@ namespace MatchingServer
 
         public Server()
         {
-            StartServer();
         }
 
         public Server(bool debug)
         {
             this.debug = debug;
-            StartServer();
         }
 
-        void StartServer()
+        public void Start()
         {
             HttpListener listener = GetHttpListener();
             try
             {
                 listener.Start();
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 ErrorHandling(e);
             }
@@ -65,7 +64,9 @@ namespace MatchingServer
             {
                 var param = context.Request.QueryString["name"];
                 matching = new Matching((param == "") ? "debug" : param);
-            } else {
+            }
+            else
+            {
                 matching = new Matching(context.Request.UserHostAddress);
             }
             string result = matching.GetResponseValue();
