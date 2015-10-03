@@ -10,7 +10,7 @@ namespace MatchingServer
         private static SqliteHandler instance;
         private static readonly string filename = "dataset.db";
         private readonly string tableDefinition = @"
-            CREATE TABLE matching(id INTEGER PRYMARY KEY, ip_address_1, ip_address_2)
+            CREATE TABLE matching(id INTEGER PRYMARY KEY, host TEXT, guest TEXT)
         ";
 
         public delegate void CallbackQuery(SqliteCommand command);
