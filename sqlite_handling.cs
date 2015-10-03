@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Mono.Data.Sqlite; // Mac or Linux
 //using System.Data.SQlite // Windows
 //
-namespace Webserver
+namespace MatchingServer
 {
     public class SqliteHandling
     {

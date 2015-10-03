@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using System.Text;
 
-namespace Webserver
+namespace MatchingServer
 {
     public class Server
     {
