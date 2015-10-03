@@ -7,19 +7,29 @@ namespace MatchingServer
 {
     public class SqliteHandling
     {
-        string filename;
-        readonly string tableDefinition = @"
+        private static SqliteHandling instance;
+        private static readonly string filename = "dataset.db";
+        private readonly string tableDefinition = @"
             CREATE TABLE matching(id INTEGER PRYMARY KEY, ip_address_1, ip_address_2)
         ";
 
         public delegate void CallbackQuery(SqliteCommand command);
 
-        public SqliteHandling(string filename)
+        public SqliteHandling()
         {
-            this.filename = filename;
+            CreateTableOnlyOnce();
         }
 
-        public void CreateTableOnlyOnce()
+        public static SqliteHandling GetInstance()
+        {
+            if (instance == null)
+            {
+                instance = new SqliteHandling();
+            }
+            return instance;
+        }
+
+        void CreateTableOnlyOnce()
         {
             ExecuteQuery((command) => {
                 command.CommandText = "SELECT * FROM sqlite_master WHERE type='table'";
