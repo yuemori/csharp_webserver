@@ -35,7 +35,7 @@ namespace MatchingServer
                 case Matching.STATUS.ERROR:
                     return "error";
                 default:
-                    Logger.Debug("Found illegal STATUS");
+                    Logger.Debug("Found illegal STATUS", hostAddress);
                     throw new Exception();
             }
         }
@@ -76,14 +76,14 @@ namespace MatchingServer
                     enemyAddress = matchingList[0].host;
                     return STATUS.MATCHING;
                 default:
-                    Logger.Error("MatchingList found over 2 number");
+                    Logger.Error("MatchingList found over 2 number", hostAddress);
                     return STATUS.ERROR;
             }
         }
 
         void RegisterAddressToHost(SqliteCommand command, string address)
         {
-            Logger.Info("Register to host");
+            Logger.Info("Register to host", hostAddress);
             command.CommandText = string.Format(
                 "INSERT INTO matching (host, guest) VALUES('{0}', null)",
                 address
@@ -93,7 +93,7 @@ namespace MatchingServer
 
         void RegisterAddressToGuest(SqliteCommand command, string id, string address)
         {
-            Logger.Info("Register to guest");
+            Logger.Info("Register to guest", hostAddress);
             command.CommandText = string.Format(
                 "UPDATE matching SET guest = '{0}' WHERE id = {1}",
                 address,
@@ -106,11 +106,11 @@ namespace MatchingServer
         {
             if (matching.IsWaiting())
             {
-                Logger.Info("Status is waiting");
+                Logger.Info("Status is waiting", hostAddress);
                 return STATUS.WAITING;
             }
 
-            Logger.Info("Status is matching");
+            Logger.Info("Status is matching", hostAddress);
             enemyAddress = matching.GetEnemyAddress(hostAddress);
             return STATUS.MATCHING;
         }
@@ -124,13 +124,13 @@ namespace MatchingServer
             switch (matchList.Count)
             {
                 case 0:
-                    Logger.Info("HostAddress not registerd");
+                    Logger.Info("HostAddress not registerd", hostAddress);
                     return RegisterHost(command);
                 case 1:
-                    Logger.Info("HostAddress registerd");
+                    Logger.Info("HostAddress registerd", hostAddress);
                     return MatchingCheck(matchList[0]);
                 default:
-                    Logger.Warning("Matching over 2 number");
+                    Logger.Error("Matching over 2 number", hostAddress);
                     return STATUS.ERROR;
             }
         }
@@ -138,14 +138,12 @@ namespace MatchingServer
         void MatchStart()
         {
             SqliteHandler sqlite = SqliteHandler.GetInstance();
-            Logger.Info("-------------------");
-            Logger.Info("Request recieved");
+            Logger.Info("Request recieved", hostAddress);
             sqlite.ExecuteQuery((command) => {
-                Logger.Info("Matching Start: " + hostAddress);
+                Logger.Info("Matching Start", hostAddress);
                 result = Match(command);
             });
-            Logger.Info("Matching End");
-            Logger.Info("-------------------");
+            Logger.Info("Matching End", hostAddress);
         }
     }
 }
