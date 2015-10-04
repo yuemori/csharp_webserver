@@ -1,5 +1,4 @@
 .DS_Store
 
-*.exe
 logs/
 db/
