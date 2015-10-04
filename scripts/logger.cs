@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.IO;
 
 namespace MatchingServer
 {
@@ -61,12 +62,21 @@ namespace MatchingServer
 
         static void FileWrite(string message)
         {
-            using (System.IO.StreamWriter writer = new System.IO.StreamWriter(
-                  Application.Config.LogFile, true, Encoding.GetEncoding(Application.Config.Encode)
-            ))
+            using (FileStream stream = CreateFileStream())
             {
-              writer.Write(message + "\n");
+              using (StreamWriter writer = new StreamWriter(stream, Encoding.GetEncoding(Application.Config.Encode)))
+              {
+                  writer.Write(message + "\n");
+                  writer.Close();
+              }
             }
+        }
+
+        static FileStream CreateFileStream()
+        {
+            return new FileStream(
+                Application.Config.LogFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite
+            );
         }
 
         static string Decorate(string status, string message, string ipAddress)

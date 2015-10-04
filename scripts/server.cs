@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Text;
+using System.Threading;
 
 namespace MatchingServer
 {
@@ -48,10 +49,16 @@ namespace MatchingServer
             while (true)
             {
                 HttpListenerContext context = listener.GetContext();
-                AddResponseHeader(context);
-                AddResponseOutput(context);
-                context.Response.Close();
+                ThreadPool.QueueUserWorkItem(o => HandleRequest(context));
             }
+        }
+
+        void HandleRequest(HttpListenerContext context)
+        {
+            Logger.Debug("Create Thread");
+            AddResponseHeader(context);
+            AddResponseOutput(context);
+            context.Response.Close();
         }
 
         void AddResponseHeader(HttpListenerContext context)
