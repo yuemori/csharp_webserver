@@ -1,6 +1,6 @@
 {
-  "database_file": "dataset.db",
-  "log_file": "development.log",
+  "database_file": "db/dataset.db",
+  "log_file": "logs/development.log",
   "encoding": "UTF-8",
   "prefixes": [
     "http://*:8081/"
