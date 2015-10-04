@@ -10,7 +10,7 @@ namespace MatchingServer
     public class Config
     {
         string filePath;
-        Dictionary<string, string> config;
+        Dictionary<string, object> config;
 
         public Config(string configFilePath)
         {
@@ -20,32 +20,44 @@ namespace MatchingServer
                 throw new ArgumentException();
             }
             this.filePath = configFilePath;
-            config = new Dictionary<string, string>();
+            config = new Dictionary<string, object>();
             LoadConfig();
         }
 
         public string DatabaseFile
         {
-            get { return config["database_file"]; }
+            get { return config["database_file"].ToString(); }
         }
 
         public string LogFile
         {
-            get { return config["log_file"]; }
+            get { return config["log_file"].ToString(); }
         }
 
         public string Encode
         {
-            get { return config["encoding"]; }
+            get { return config["encoding"].ToString(); }
+        }
+
+        public List<string> Prefixes
+        {
+            get {
+              List<string> prefixes = new List<string>();
+              foreach (object prefix in (List<object>)config["prefixes"])
+              {
+                  prefixes.Add((string)prefix);
+              }
+              return prefixes;
+            }
         }
 
         public bool IsValid()
         {
             try
             {
-                FileValidation("database_file");
-                FileValidation("log_file");
-                EncodingValidation(config["encoding"]);
+                FileValidation("database_file", DatabaseFile);
+                FileValidation("log_file", LogFile);
+                EncodingValidation(Encode);
             }
             catch
             {
@@ -60,33 +72,29 @@ namespace MatchingServer
             {
                 string jsonString = reader.ReadToEnd();
                 reader.Close();
-                var jsonDictionary = Json.Deserialize(jsonString) as Dictionary<string, object>;
-                foreach(KeyValuePair<string, object> pair in jsonDictionary)
-                {
-                    config[pair.Key] = pair.Value.ToString();
-                }
+                config = Json.Deserialize(jsonString) as Dictionary<string, object>;
             }
             Console.WriteLine("Load Config.");
         }
 
-        void FileValidation(string key)
+        void FileValidation(string key, string filePath)
         {
-            if (File.Exists(config[key]))
+            if (File.Exists(filePath))
                 return;
 
-            Console.WriteLine(string.Format("File not exist: {0}, {1}", key, config[key]));
+            Console.WriteLine(string.Format("File not exist: {0}, {1}", key, filePath));
             throw new Exception();
         }
 
-        void EncodingValidation(string encoding)
+        void EncodingValidation(string encodeType)
         {
             try
             {
-                Encoding.GetEncoding(encoding);
+                Encoding.GetEncoding(encodeType);
             }
             catch
             {
-                Console.WriteLine("Illegal Encoding Type: " + encoding);
+                Console.WriteLine("Illegal Encoding Type: " + encodeType);
                 throw new Exception();
             }
         }

@@ -35,8 +35,11 @@ namespace MatchingServer
         {
             var listener = new HttpListener();
 
-            listener.Prefixes.Add("http://localhost:8081/");
-            listener.Prefixes.Add("http://127.0.0.1:8081/");
+            foreach (string prefix in Application.Config.Prefixes)
+            {
+                Logger.Debug("Server Binding URI: " + prefix);
+                listener.Prefixes.Add(prefix);
+            }
             return listener;
         }
 
