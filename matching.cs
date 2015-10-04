@@ -63,9 +63,9 @@ namespace MatchingServer
             return matchingList;
         }
 
-        STATUS RegisterHost(SqliteCommand command)
+        STATUS RegisterAddress(SqliteCommand command)
         {
-            List<MatchingTable> matchingList = GetMatchingList(command, "SELECT * FROM matching WHERE guest = null");
+            List<MatchingTable> matchingList = GetMatchingList(command, "SELECT * FROM matching WHERE guest = ''");
             switch (matchingList.Count)
             {
                 case 0:
@@ -85,7 +85,7 @@ namespace MatchingServer
         {
             Logger.Info("Register to host", hostAddress);
             command.CommandText = string.Format(
-                "INSERT INTO matching (host, guest) VALUES('{0}', null)",
+                "INSERT INTO matching (host, guest) VALUES('{0}', '')",
                 address
             );
             command.ExecuteNonQuery();
@@ -125,7 +125,7 @@ namespace MatchingServer
             {
                 case 0:
                     Logger.Info("HostAddress not registerd", hostAddress);
-                    return RegisterHost(command);
+                    return RegisterAddress(command);
                 case 1:
                     Logger.Info("HostAddress registerd", hostAddress);
                     return MatchingCheck(matchList[0]);
