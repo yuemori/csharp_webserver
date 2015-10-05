@@ -6,56 +6,60 @@ namespace MatchingServer
 {
     class Logger
     {
+        enum Level {
+            Debug, Info, Warning, Error
+        }
+
         public static void Debug(string message)
         {
-            Print("Debug", message);
+            Print(Level.Debug, message);
         }
 
         public static void Debug(string message, string ipAddress)
         {
-            Print("Debug", message, ipAddress);
+            Print(Level.Debug, message, ipAddress);
         }
 
         public static void Info(string message)
         {
-            Print("Info", message);
+            Print(Level.Info, message);
         }
 
         public static void Info(string message, string ipAddress)
         {
-            Print("Info", message, ipAddress);
+            Print(Level.Info, message, ipAddress);
         }
 
         public static void Warning(string message)
         {
-            Print("Warning", message);
+            Print(Level.Warning, message);
         }
 
         public static void Warning(string message, string ipAddress)
         {
-            Print("Warning", message);
+            Print(Level.Warning, message);
         }
 
         public static void Error(string message)
         {
-            Print("Error", message);
+            Print(Level.Error, message);
         }
 
         public static void Error(string message, string ipAddress)
         {
-            Print("Error", message);
+            Print(Level.Error, message);
         }
 
-        static void Print(string status, string message, string ipAddress)
+        static void Print(Level level, string message, string ipAddress)
         {
-            var decorateMessage = Decorate(status, message, ipAddress);
+            var decorateMessage = Decorate(level.ToString(), message, ipAddress);
             Console.WriteLine(decorateMessage);
             FileWrite(decorateMessage);
         }
 
-        static void Print(string status, string message)
+        static void Print(Level level, string message)
         {
-            var decorateMessage = Decorate(status, message, "-");
+            var decorateMessage = Decorate(level.ToString(), message, "-");
             Console.WriteLine(decorateMessage);
             FileWrite(decorateMessage);
         }
