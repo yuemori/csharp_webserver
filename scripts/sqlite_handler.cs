@@ -10,7 +10,7 @@ namespace MatchingServer
         private static SqliteHandler instance;
         private string filename;
         private readonly string tableDefinition = @"
-            CREATE TABLE matching(id INTEGER PRIMARY KEY, host TEXT, guest TEXT)
+            CREATE TABLE IF NOT EXISTS matching(id INTEGER PRIMARY KEY, host TEXT, guest TEXT)
         ";
 
         public delegate void CallbackQuery(SqliteCommand command);
@@ -18,7 +18,7 @@ namespace MatchingServer
         private SqliteHandler()
         {
             this.filename = Application.Config.DatabaseFile;
-            CreateTableOnlyOnce();
+            CreateTable();
         }
 
         public static SqliteHandler GetInstance()
@@ -30,16 +30,11 @@ namespace MatchingServer
             return instance;
         }
 
-        void CreateTableOnlyOnce()
+        void CreateTable()
         {
             ExecuteQuery((command) => {
-                // テーブルがあるかチェックしてなければ作成
-                if (!IsTableExist(command))
-                {
-                    command.CommandText = tableDefinition;
-                    command.ExecuteNonQuery();
-                    Logger.Info("Table created");
-                }
+                command.CommandText = tableDefinition;
+                command.ExecuteNonQuery();
             });
         }
 
@@ -58,21 +53,6 @@ namespace MatchingServer
                 }
                 conn.Close();
             }
-        }
-
-        private bool IsTableExist(SqliteCommand command)
-        {
-            command.CommandText = "SELECT * FROM sqlite_master WHERE type='table'";
-            List<string> tList = new List<string>();
-            using (SqliteDataReader reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    tList.Add(reader["tbl_name"].ToString());
-                }
-            }
-
-            return tList.Count != 0;
         }
     }
 }
